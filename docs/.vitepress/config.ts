@@ -11,6 +11,19 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/guide/what-is-rmf2' },
       { text: 'References', link: '/references/overview' },
+      {
+        text: process.env.VITE_DOCS_VERSION ?? "latest",
+        items: [
+          {
+            text: 'latest',
+            link: 'http://dev.rmf-industrial.org'
+          },
+          {
+            text: 'legacy',
+            link: 'http://dev.rmf-industrial.org/legacy'
+          },
+        ]
+      }
     ],
 
     sidebar: {
@@ -39,6 +52,11 @@ export default defineConfig({
           { text: 'Overview', link: '/references/overview' },
           { text: 'VDA5050 Core', link: '/references/vda5050_core' },
       ]
+    },
+
+    footer: {
+      message: 'Released under the Apache-2.0 License.',
+      copyright: 'Copyright (C) 2026 ROS-Industrial Consortium Asia Pacific'
     },
 
     socialLinks: [
