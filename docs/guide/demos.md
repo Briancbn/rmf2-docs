@@ -83,9 +83,9 @@ docker logs vda5050_fiware --tail 30 -f
 ## Other ways to drive robots
 
 - **MAPF directly** — submit a single planning task via the movement gateway
-  (`POST :8009/mapf/send_task`). See [MAPF → Try it directly](/modules/mapf#try-it-directly-send-to-test).
+  (`POST :8009/mapf/send_task`). See [MAPF → Try it directly](/guide/mapf#try-it-directly-send-to-test).
 - **Simulation actions** — rack-lift / depalletize via `TaskRequest` messages. See
-  [Simulation → Controlling the simulation](/modules/simulation#controlling-the-simulation).
+  [Simulation → Controlling the simulation](/guide/simulation#controlling-the-simulation).
 
 ::: warning Some shell testers are currently broken
 `test_scripts/send_test_tasks_*_robots.sh`, `send_all_home.sh`, and `loop_tasks.sh` all

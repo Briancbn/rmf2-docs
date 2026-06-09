@@ -1,8 +1,9 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons'
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: "RMF-Industrial",
   description: "RMF2 Documentation",
   themeConfig: {
@@ -30,16 +31,24 @@ export default defineConfig({
           items: [
             { text: 'What is RMF-Industrial?', link: '/guide/what-is-rmf2' },
             { text: 'Getting Started', link: '/guide/getting-started' },
+            { text: 'Demos', link: '/guide/demos' },
+            { text: 'Architecture', link: '/guide/architecture' },
           ]
         },
         {
-          text: 'Guide',
+          text: 'How-tos',
           items: [
+            { text: 'Launch scripts', link: '/guide/launch-scripts' },
+            { text: 'Ports & networking', link: '/guide/ports' },
           ]
         },
         {
           text: 'Module Documentation',
           items: [
+            { text: 'Simulation (UE5)', link: '/guide/simulation' },
+            { text: 'Task & Task Orchestrator', link: '/guide/task-orchestrator' },
+            { text: 'MAPF (unified)', link: '/guide/mapf' },
+            { text: 'VDA5050 — Master & Client', link: '/guide/vda5050' },
           ]
         },
         { text: 'Config & API References', link: '/references/overview' },
@@ -59,6 +68,7 @@ export default defineConfig({
       { icon: 'github', link: 'https://github.com/ros-industrial/rmf_industrial' }
     ]
   },
+  mermaid: {},
   markdown: {
     config(md) {
       md.use(groupIconMdPlugin)
@@ -67,6 +77,6 @@ export default defineConfig({
   vite: {
     plugins: [
       groupIconVitePlugin()
-    ],
+    ]
   }
-})
+}))

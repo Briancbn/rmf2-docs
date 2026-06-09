@@ -221,5 +221,5 @@ ros_industrial_ws/
 └── simulation/               # UE5 packaged binary (RMF2_new_sim)
 ```
 
-See [Modules](/modules/mapf) for the deep dive on each box, and
+See [Modules](/guide/mapf) for the deep dive on each box, and
 [Ports & networking](/guide/ports) for the authoritative port map.

@@ -188,7 +188,7 @@ docker logs mapf_unified --tail 30 -f      # all MAPF services (unified containe
 `test_scripts/send_test_tasks_*_robots.sh`, `send_all_home.sh`, and `loop_tasks.sh` all
 call **`test_replace_destination.py`, which is missing from the repo** — so they fail as
 shipped. Use the `/mapf/send_task` curl above (or the
-[Task Orchestrator workflow sender](/modules/task-orchestrator#try-it-directly-send-to-test))
+[Task Orchestrator workflow sender](/guide/task-orchestrator#try-it-directly-send-to-test))
 until that script is restored.
 :::
 

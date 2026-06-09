@@ -23,17 +23,17 @@ features:
       src: /icons/FcCamcorderPro.svg
     title: Simulation & Digital Twin
     details: Large Scale Photorealistic Simulation / Digital Twin in Unreal Engine.
-    link: /modules/simulation
+    link: /guide/simulation
   - icon:
       src: /icons/FcMindMap.svg
     title: Multi-Agent Path Finding and Execution
     details: Scalable route planning and deterministic execution.
-    link: /modules/mapf
+    link: /guide/mapf
   - icon:
       src: /icons/FcWorkflow.svg
     title: Workflow Orchestration
     details: Effortless Workflow definition and customization.
-    link: /modules/task-orchestrator
+    link: /guide/task-orchestrator
   - icon:
       src: /icons/FcTimeline.svg
     title: Task Scheduling
@@ -42,7 +42,7 @@ features:
       src: /icons/FcApproval.svg
     title: VDA5050 Support
     details: Out-of-box support and tooling for VDA5050 Compatibility.
-    link: /modules/vda5050
+    link: /guide/vda5050
   - icon: 🚀
     title: Fast Deployment
     details: Continuous Delivery through building, testing, and shipping isolated features as microservices.
@@ -61,10 +61,10 @@ repositories, each shipped as a Docker image:
 
 | Module | Repo | Image |
 | --- | --- | --- |
-| [MAPF (unified)](/modules/mapf) | `mapf_unified_repo` | `mapf_unified:latest` |
-| [Task Orchestrator](/modules/task-orchestrator) | `task_orchestrator_repo` | `task_orchestrator:latest` |
-| [VDA5050 ↔ FIWARE](/modules/vda5050) | `vda5050_fiware_repo` | `vda5050_fiware:latest` |
-| [Simulation](/modules/simulation) | `simulation/` | UE5 packaged binary |
+| [MAPF (unified)](/guide/mapf) | `mapf_unified_repo` | `mapf_unified:latest` |
+| [Task Orchestrator](/guide/task-orchestrator) | `task_orchestrator_repo` | `task_orchestrator:latest` |
+| [VDA5050 ↔ FIWARE](/guide/vda5050) | `vda5050_fiware_repo` | `vda5050_fiware:latest` |
+| [Simulation](/guide/simulation) | `simulation/` | UE5 packaged binary |
 | IOCS broker stack | `rmf2_broker_repo` | Scorpio / Redis / RabbitMQ / Postgres |
 
 > All containers share the Docker network `rmf2_broker_rmf-network`. See
