@@ -15,6 +15,65 @@ positions through FIWARE so planning always uses current state.
 
 > In one line: *many robots, one floor, no collisions — and keep them moving.*
 
+## How it works
+
+MAPF can be operated without any knowledge of its internals, but two principles
+explain the behavior of the services described below.
+
+### The mental model
+
+The system deliberately separates *planning* from *execution* and applies a
+different assumption about time to each.
+
+1. **Planning assumes a synchronized clock.** The `mapf_solver` plans for the entire
+   fleet at once, treating every robot as advancing in lockstep across discrete
+   timesteps (`t = 0, 1, 2, …`). Planning against a single shared clock is what
+   allows the resulting paths to be guaranteed collision-free. The solver uses the
+   ECBS algorithm (Enhanced Conflict-Based Search), which accepts a small, bounded
+   loss of optimality in exchange for substantially faster planning.
+2. **Execution assumes no shared clock.** In practice, robots advance at different
+   and unpredictable rates — one may pause while another proceeds quickly. To stay
+   safe under these conditions, the executor converts the timestep-based plan into an
+   **Action Dependency Graph (ADG)**: a partial order in which each move waits for
+   the specific predecessor action it depends on rather than for a clock value. This
+   preserves the solver's collision-freedom regardless of how fast or slowly
+   individual robots move.
+
+In short, the fleet is *planned* as though perfectly synchronized, yet *executed* as
+a set of dependencies that remain safe under real-world timing.
+
+### Request → plan → execute
+
+A movement request progresses through the services in a single direction.
+
+1. **Submit.** A client submits node-named tasks — for example, moving a robot from
+   `P5` to `P1` — either through the REST API of `movement_request_server` or as a
+   FIWARE `TaskRequest` received by `mapf_mrs`. Both entry points place the request
+   onto a shared Redis queue (`mapf_tasks`); neither performs any planning itself.
+2. **Plan.** The `adg_executor` retrieves the queued batch, translates the node names
+   into map coordinates, and requests a plan from `mapf_solver`. The solver returns,
+   for each robot, a sequence of steps stamped with the timestep at which each step
+   occurs.
+3. **Compile.** The `adg_executor` builds the Action Dependency Graph from those
+   steps. It links each robot's own moves in sequence and adds a cross-robot
+   dependency wherever one robot must vacate a node before another is permitted to
+   enter it.
+4. **Execute.** The executor dispatches each action that is *ready* as a VDA5050
+   order. An action becomes ready once the actions it depends on across other robots
+   have completed; to avoid unnecessary stalls, each robot may have up to three of
+   its own upcoming moves queued in advance. As robots report their progress,
+   completed actions release the actions that depend on them, and execution proceeds
+   incrementally until the task is complete.
+
+Throughout execution, the task's status — `QUEUED`, `IN_PROGRESS`, `COMPLETED`, or
+`FAILED` — is recorded in Redis under the task identifier, and this is the value
+returned by `/mapf/monitor_task`.
+
+The map is defined by a single RMF YAML file listing named nodes and the lanes
+between them. It is shared by two consumers: `mapf_solver` reads it for path
+planning, and `fiware_map_server` publishes it to the FIWARE context broker so that
+other services can query the current map.
+
 ## Services inside the container
 
 | Service | Port(s) | Purpose |
@@ -28,16 +87,16 @@ positions through FIWARE so planning always uses current state.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                   mapf_unified container                 │
-│  supervisord (process manager)                           │
-│  ├── fiware_map_server     → :7073 (HTTP/Flask)          │
-│  ├── load_maps             → (one-shot at startup)       │
-│  ├── mapf_solver           → :8888 (HTTP)                │
-│  ├── adg_executor          → :6333 (HTTP), :1932 (MQTT)  │
-│  ├── mapf_mrs              → :1933 (MQTT)                 │
-│  └── movement_request_svr  → :8009 (HTTP/FastAPI)        │
-│                                                          │
-│  External deps: mosquitto · redis · scorpio · rabbitmq   │
+│                   mapf_unified container                │
+│  supervisord (process manager)                          │
+│  ├── fiware_map_server     → :7073 (HTTP/Flask)         │
+│  ├── load_maps             → (one-shot at startup)      │
+│  ├── mapf_solver           → :8888 (HTTP)               │
+│  ├── adg_executor          → :6333 (HTTP), :1932 (MQTT) │
+│  ├── mapf_mrs              → :1933 (MQTT)               │
+│  └── movement_request_svr  → :8009 (HTTP/FastAPI)       │
+│                                                         │
+│  External deps: mosquitto · redis · scorpio · rabbitmq  │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -73,7 +132,7 @@ docker compose up -d                            # from mapf_unified_repo
 | `REDIS_HOST` | `redis` | Redis hostname |
 | `CONTEXT_BROKER_HOST` | `scorpio` | FIWARE context broker |
 | `AMQP_HOST` | `rmf2_broker-rabbitmq-1` | RabbitMQ hostname |
-| `BUILDING_NAME` | `warehouse_v2` | Map / building name |
+| `BUILDING_NAME` | `warehouse_os_setup_v2` | Map / building name |
 | `MAP_SERVER_PORT` | `7073` | FIWARE map server port |
 
 See `.env` in the repo for the full list.
@@ -112,10 +171,11 @@ curl 'http://localhost:8009/mapf/monitor_task?task_id=t1'
 curl 'http://localhost:8009/mapf/monitor_task_verbose?task_id=t1'
 ```
 
-Expected `monitor_task` shape:
+Expected `monitor_task` shape — `status` is one of `QUEUED`, `IN_PROGRESS`,
+`COMPLETED`, `FAILED`, or `missing` if the executor hasn't picked up that task id yet:
 
 ```json
-{ "tasks": [ { "task_id": "t1", "status": "executing" } ] }
+{ "tasks": [ { "task_id": "t1", "status": "IN_PROGRESS" } ] }
 ```
 
 Watch execution as it happens:
