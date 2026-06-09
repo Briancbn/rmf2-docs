@@ -1,108 +1,122 @@
 # Simulation (UE5)
 
-**Location:** `simulation/` · **Launcher:** `simulation/RMF2_new_sim.sh` · **Engine:** Unreal Engine 5
+The UE5 simulation plays the **robot side** of the system. You control it entirely over
+**MQTT** on the broker at `localhost:1883`. There are exactly two things to control:
 
-A packaged **Unreal Engine 5** warehouse simulation that stands in for the physical AGV
-fleet. In a sim run it plays the robot side of the VDA5050 conversation over MQTT, so the
-rest of the stack behaves exactly as it would against real hardware.
+- **AGVs** — the mobile robots, driven with **VDA5050** `order` messages.
+- **Devices** — manipulators, conveyors and rack lift/drop, driven with `task_request`.
 
-## What problem it solves
+> The sim must be running first (via the demo launcher, or `~/ros_industrial_ws/simulation/RMF2_new_sim.sh`).
 
-You can't always test against a physical AGV fleet — it's expensive, slow, and risky to
-iterate on. **The simulation provides realistic virtual robots that speak the exact same
-VDA5050/MQTT protocol**, so the entire stack (MAPF, orchestrator, bridge, Scorpio) runs
-unchanged against them. It lets you develop and demo the full system with zero hardware.
+## Control an AGV (VDA5050)
 
-> In one line: *exercise the whole stack end-to-end without a single real robot.*
-
-## What ships
+Drive an AGV by publishing a VDA5050 **order** to:
 
 ```
-simulation/
-├── RMF2_new_sim.sh                       # launcher script
-├── RMF2_new_sim/Binaries/Linux/RMF2_new_sim   # packaged UE5 executable
-├── Engine/                               # UE5 runtime
-└── Manifest_*.txt                        # packaged-build manifests
+uagv/v2/Manufacturer/<serial>/order
 ```
-
-`RMF2_new_sim.sh` simply `chmod +x`'s and runs the packaged binary, forwarding any
-arguments:
-
-```sh
-#!/bin/sh
-UE_TRUE_SCRIPT_NAME=$(echo "$0" | xargs readlink -f)
-UE_PROJECT_ROOT=$(dirname "$UE_TRUE_SCRIPT_NAME")
-chmod +x "$UE_PROJECT_ROOT/RMF2_new_sim/Binaries/Linux/RMF2_new_sim"
-"$UE_PROJECT_ROOT/RMF2_new_sim/Binaries/Linux/RMF2_new_sim" RMF2_new_sim "$@"
-```
-
-::: warning Not tmuxinator
-The simulation is a **direct binary**, not a tmuxinator project. The tmux launcher runs
-it in the `Sim` pane; teardown stops it with `pkill -f RMF2_new_sim` (and killing the
-`ihi_demo` session also reaps the pane). Older scripts referenced a `tmuxinator
-ihi_p2_final_demo` session — that path is no longer used.
-:::
-
-## Run
-
-Via the demo launcher (step 7):
-
-```bash
-./start_environment_tmux.sh            # starts the sim in the Sim pane
-```
-
-Directly:
-
-```bash
-~/ros_industrial_ws/simulation/RMF2_new_sim.sh
-```
-
-## Role in the system
-
-- Subscribes/publishes **VDA5050** messages over **MQTT** (Mosquitto), acting as the AGVs.
-- Robot state flows through the [VDA5050 bridge](/guide/vda5050) into the
-  Scorpio context broker, so MAPF and the Task Orchestrator see simulated robots exactly
-  like physical ones.
-
-## Try it directly (send to test)
-
-The simulation is the *robot side*, so you don't send tasks to the binary itself — you
-launch it, then drive its robots through MAPF / the Task Orchestrator and watch them
-move.
-
-```bash
-# 1. Launch the sim (or it comes up at step 7 of the launcher)
-~/ros_industrial_ws/simulation/RMF2_new_sim.sh
-
-# 2. Confirm the simulated robots are chattering on MQTT (VDA5050 topics)
-mosquitto_sub -h localhost -p 1883 -t '#' -v        # all topics; Ctrl-C to stop
-
-# 3. Drive a robot and watch it move (see the MAPF / Task Orchestrator pages)
-#    e.g. the orchestrator workflow sender:
-python3 ~/ros_industrial_ws/ros_industrial_demo/test_scripts/send_parallel_workflow_3_robots.py
-```
-
-Confirm state is reaching Scorpio via the [bridge](/guide/vda5050):
-
-```bash
-docker logs vda5050_fiware --tail 30 -f             # expect periodic "state" lines
-```
-
-## Controlling the simulation
-
-Beyond driving AMRs to waypoints (via MAPF / the Task Orchestrator), the sim accepts
-**`TaskRequest`** messages to trigger asset actions — rack lifting and manipulator
-pickup.
-
-### Message format
 
 ```json
 {
-  "type": "TaskRequest",
+  "headerId": 1234,
+  "timestamp": "2026-06-05T06:32:29.962Z",
+  "version": "2.0.0",
+  "manufacturer": "Manufacturer",
+  "serialNumber": "10",
+  "orderId": "order-<uuid>",
+  "orderUpdateId": 1,
+  "nodes": [
+    {
+      "nodeId": "P123",
+      "sequenceId": 0,
+      "released": true,
+      "nodePosition": {
+        "x": -0.6,
+        "y": -49.3,
+        "theta": 0.0,
+        "allowedDeviationXY": 0.5,
+        "allowedDeviationTheta": 0.5,
+        "mapId": "urn:ngsi-ld:Map:warehouse_os_setup"
+      },
+      "actions": []
+    }
+  ],
+  "edges": []
+}
+```
+
+The AGV reports back on these topics:
+
+| Topic | Direction | Purpose |
+| --- | --- | --- |
+| `uagv/v2/Manufacturer/<serial>/order` | → sim | Drive the AGV to a node |
+| `uagv/v2/Manufacturer/<serial>/state` | sim → | Pose, `lastNodeId`, `driving`, battery, … |
+| `uagv/v2/Manufacturer/<serial>/connection` | sim → | Online / offline |
+
+The AGV has **arrived** when its `/state` reports `lastNodeId == <your nodeId>` and
+`driving == false`:
+
+```json
+{
+  "agvPosition": { "x": 4.39, "y": -3.85, "theta": -1.74 },
+  "batteryState": { "batteryCharge": 100.0, "charging": false },
+  "driving": false,
+  "lastNodeId": "P123",
+  "operatingMode": "AUTOMATIC",
+  "orderId": "order_1780640519",
+  "serialNumber": "10",
+  "timestamp": "2026-06-05T06:32:29.962Z",
+  "version": "2.0.0"
+}
+```
+
+## Control a device (`task_request`)
+
+Trigger a device action by publishing a `TaskRequest` to:
+
+```
+asset/<asset_id>/task_request
+```
+
+```json
+{
   "id": "urn:ngsild:Task:001:TaskRequest",
   "task_type": "liftrack",
-  "task_command": "START",
-  "asset_id": "6",
+  "task_command": "liftrack",
+  "asset_id": "1",
+  "task_params": {}
+}
+```
+
+::: tip What actually matters
+Only **`task_type`**, **`task_command`** and the target **`asset_id`** drive behaviour.
+`task_command` defaults to `task_type`; the rest of the payload is along for the ride.
+:::
+
+The `task_type` you send and the `asset_id` you address it to go together:
+
+| `task_type` | Addressed to (`asset_id`) | Action |
+| --- | --- | --- |
+| `liftrack` / `droprack` | the **AGV serial** (e.g. `1`, `10`) | AGV lifts / drops the rack at its current spot |
+| `depalletize` | a manipulator — `ManipulatorRobot1`, `ManipulatorRobot2` | Robot arm performs a pickup |
+| `dropoff` | a conveyor — `Conveyor1` … `Conveyor3` | Conveyor accepts the dropoff |
+
+The device reports back on these topics:
+
+| Topic | Direction | Purpose |
+| --- | --- | --- |
+| `asset/<asset_id>/task_request` | → sim | Trigger an asset action |
+| `asset/<asset_id>/task_status` | sim → | Task lifecycle: `STARTED` / `RUNNING` / `COMPLETED` / `FAILED` / `REJECTED` |
+| `asset/<asset_id>/asset_status` | sim → | Per-asset heartbeat |
+
+The action is **done** when `task_status` reports `COMPLETED`:
+
+```json
+{
+  "id": "urn:ngsild:Task:task_Depalletize001:TaskStatus",
+  "task_type": "Depalletize",
+  "status": "RUNNING",
+  "asset_id": "",
   "task_params": {},
   "timestamp": "2025-01-09T15:30:15Z",
   "task_expected_start": "2025-01-09T14:30:15",
@@ -110,45 +124,129 @@ pickup.
 }
 ```
 
-::: tip What actually matters for the sim
-Only **`task_type`** (plus `task_command` and the target `asset_id`) drives behaviour.
-The remaining fields are required by the schema but unused by the simulation.
-:::
+`asset_status` (heartbeat):
 
-### AMR — rack lifting
-
-| `task_type` | Action |
-| --- | --- |
-| `liftrack` | AMR lifts the rack at `asset_id` |
-| `droprack` | AMR drops the rack |
-
-### Robot arm — manipulator pickup
-
-| `task_type` | Action |
-| --- | --- |
-| `depalletize` | Manipulator performs a pickup |
-
-<!-- TODO(confirm transport): how is this TaskRequest delivered to the sim?
-     MQTT topic vs AMQP @RECEIVE@ exchange? Fill in the exact publish command below
-     once confirmed. -->
-
-::: warning Transport not yet confirmed
-The exact channel that carries `TaskRequest` to the sim (an MQTT topic vs the AMQP
-`@RECEIVE@` exchange) still needs confirming — once known, a copy-paste publish command
-goes here. More sim behaviours will be documented as the functionality is finished.
-:::
-
-_Source: Dillon Chew (project chat)._
-
-## Stop
-
-```bash
-pkill -f RMF2_new_sim          # or just stop_environment_tmux.sh
+```json
+{
+  "asset_id": "MANIP1",
+  "asset_type": "Manipulator",
+  "status": "BUSY",
+  "timestamp": "2025-01-09T15:30:10Z",
+  "current_task": "urn:ngsild:Task:task_Depalletize001:TaskRequest",
+  "error_code": [0],
+  "error_message": []
+}
 ```
 
-## Notes
+## Full demo walkthrough
 
-- The packaged binary is large and lives outside version control; ensure it's present on
-  the target machine before a sim run.
-- To run **without** the simulation (e.g. against real robots), simply skip step 7 — the
-  rest of the stack is unchanged.
+`demo_single_agv.py` runs one AGV through a complete **pick → manipulate → conveyor**
+cycle. Each step below is one MQTT publish (and the wait for its completion).
+
+### Run it
+
+**Prerequisites:** the UE5 sim must be running (the demo only *publishes* to it), and you
+need the `paho-mqtt` Python package.
+
+```bash
+# 1. Make sure the sim is up (demo launcher, or directly):
+~/ros_industrial_ws/simulation/RMF2_new_sim.sh
+
+# 2. In another terminal, go to the simulation test scripts:
+cd ~/ros_industrial_ws/ros_industrial_demo/test_scripts/simulation
+
+# 3. One-time: install the MQTT client
+pip install paho-mqtt
+
+# 4. Run the full demo (default AGV serial 10):
+./demo_single_agv.py
+
+#    ...or target a specific AGV serial:
+./demo_single_agv.py 12
+
+#    ...then put the rack back and park:
+./demo_single_agv_reset.py
+```
+
+::: tip
+If `./demo_single_agv.py` isn't executable, run it with `python3 demo_single_agv.py`
+instead. The script connects to the broker at `localhost:1883` and prints each step as it
+publishes and waits for completion.
+:::
+
+> The images below are **placeholders** — drop in real screenshots/GIFs from a sim run.
+
+![Full demo](/demo/overview.svg)
+
+**1. Drive to the rack pickup point** — `send_agv 10 P123`
+
+![Drive to rack](/demo/step-01.svg)
+
+**2. Lift the rack** — `send_device 10 liftrack` (addressed to the AGV serial)
+
+![Lift rack](/demo/step-02.svg)
+
+**3. Drive to the manipulator station** — `send_agv 10 P501`
+
+![Drive to manipulator](/demo/step-03.svg)
+
+**4. Depalletize — load cargo onto the rack** — `send_device ManipulatorRobot1 depalletize`
+
+![Depalletize](/demo/step-04.svg)
+
+**5. Drive to the conveyor** — `send_agv 10 P619`
+
+![Drive to conveyor](/demo/step-05.svg)
+
+**6. Conveyor dropoff** — `send_device Conveyor1 dropoff`
+
+![Conveyor dropoff](/demo/step-06.svg)
+
+**7. Drive to the drop point** — `send_agv 10 P68`
+
+![Drive to drop point](/demo/step-07.svg)
+
+**8. Drop the rack** — `send_device 10 droprack`
+
+![Drop rack](/demo/step-08.svg)
+
+**9. Clear out** — `send_agv 10 P142`
+
+![Clear out](/demo/step-09.svg)
+
+## Drive it with the test scripts
+
+Helper scripts in `test_scripts/simulation/` wrap all of the above (`lib.py`, a thin
+`paho-mqtt` client):
+
+```bash
+cd ~/ros_industrial_ws/ros_industrial_demo/test_scripts/simulation
+pip install paho-mqtt                 # one-time
+
+# --- control an AGV ---
+./send_agv.py 10 P123                 # move AGV serial 10 to waypoint P123
+./send_agv.py 10 -30.8 -49.3          # ...or raw x,y in map-frame metres
+
+# --- control a device ---
+./send_device.py 10 liftrack          # rack lift (addressed to the AGV serial)
+./send_device.py ManipulatorRobot1 depalletize
+./send_device.py Conveyor1 dropoff
+
+# --- full event-driven demos (each step waits on the live MQTT feed) ---
+./demo_single_agv.py [serial]         # pick -> manipulate -> conveyor cycle (default serial 10)
+./demo_single_agv_reset.py [serial]   # put the rack back and park
+```
+
+The steps are **event-driven**, not timed: `send_agv` blocks until the AGV's `/state`
+reports it arrived; `send_device` blocks until `asset/<id>/task_status` reports
+`COMPLETED`.
+
+## Watch the traffic
+
+```bash
+./watch.py                            # all topics
+./watch.py asset 1                    # one device
+./watch.py vda 10                     # one AGV
+# ...or with the raw client:
+mosquitto_sub -h localhost -p 1883 -t '#' -v
+```

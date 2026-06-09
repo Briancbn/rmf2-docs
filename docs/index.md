@@ -61,8 +61,8 @@ repositories, each shipped as a Docker image:
 
 | Module | Repo | Image |
 | --- | --- | --- |
-| [MAPF (unified)](/guide/mapf) | `mapf_unified_repo` | `mapf_unified:latest` |
 | [Task Orchestrator](/guide/task-orchestrator) | `task_orchestrator_repo` | `task_orchestrator:latest` |
+| [MAPF (unified)](/guide/mapf) | `mapf_unified_repo` | `mapf_unified:latest` |
 | [VDA5050](/guide/vda5050) | `vda5050_fiware_repo` | `vda5050_fiware_repo-vda5050_fiware:latest` |
 | [Simulation](/guide/simulation) | `simulation/` | UE5 packaged binary |
 | IOCS broker stack | `rmf2_broker_repo` | Scorpio / Redis / RabbitMQ / Postgres |
