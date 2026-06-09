@@ -1,7 +1,7 @@
 # RMF Industrial Developer Documentation
 
 Documentation site for the **ROS Industrial** multi-agent warehouse demo — MAPF path
-planning, the Task Orchestrator, the UE5 simulation, and the VDA5050 ↔ FIWARE bridge.
+planning, the Task Orchestrator, the UE5 simulation, and the VDA5050 bridge.
 
 Built with [VitePress](https://vitepress.dev).
 
@@ -48,8 +48,6 @@ docs/
 │   ├── getting-started.md     # prerequisites, build images, up/status/down
 │   ├── architecture.md        # system diagram, message fabrics, task flow
 │   ├── launch-scripts.md      # tmux launcher step table + control scripts
-│   └── ports.md               # authoritative port map + health endpoints
-├── modules/
 │   ├── mapf.md                # MAPF unified container
 │   ├── task-orchestrator.md   # Rust / Crossflow workflow engine
 │   ├── simulation.md          # UE5 packaged simulation

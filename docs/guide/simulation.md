@@ -10,7 +10,7 @@ rest of the stack behaves exactly as it would against real hardware.
 
 You can't always test against a physical AGV fleet — it's expensive, slow, and risky to
 iterate on. **The simulation provides realistic virtual robots that speak the exact same
-VDA5050/MQTT protocol**, so the entire stack (MAPF, orchestrator, bridge, FIWARE) runs
+VDA5050/MQTT protocol**, so the entire stack (MAPF, orchestrator, bridge, Scorpio) runs
 unchanged against them. It lets you develop and demo the full system with zero hardware.
 
 > In one line: *exercise the whole stack end-to-end without a single real robot.*
@@ -60,7 +60,7 @@ Directly:
 ## Role in the system
 
 - Subscribes/publishes **VDA5050** messages over **MQTT** (Mosquitto), acting as the AGVs.
-- Robot state flows through the [VDA5050 ↔ FIWARE bridge](/guide/vda5050) into the
+- Robot state flows through the [VDA5050 bridge](/guide/vda5050) into the
   Scorpio context broker, so MAPF and the Task Orchestrator see simulated robots exactly
   like physical ones.
 
@@ -82,7 +82,7 @@ mosquitto_sub -h localhost -p 1883 -t '#' -v        # all topics; Ctrl-C to stop
 python3 ~/ros_industrial_ws/ros_industrial_demo/test_scripts/send_parallel_workflow_3_robots.py
 ```
 
-Confirm state is reaching FIWARE via the [bridge](/guide/vda5050):
+Confirm state is reaching Scorpio via the [bridge](/guide/vda5050):
 
 ```bash
 docker logs vda5050_fiware --tail 30 -f             # expect periodic "state" lines

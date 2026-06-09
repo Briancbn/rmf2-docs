@@ -11,7 +11,7 @@ In a warehouse, many robots share the same aisles and intersections. If each rob
 its own route, they deadlock and collide. **MAPF plans time-coordinated, collision-free
 paths for the whole fleet at once** (ECBS solver), compiles them into an
 action-dependency graph the executor can drive, and exposes the map and live robot
-positions through FIWARE so planning always uses current state.
+positions through Scorpio so planning always uses current state.
 
 > In one line: *many robots, one floor, no collisions — and keep them moving.*
 
@@ -48,7 +48,7 @@ A movement request progresses through the services in a single direction.
 
 1. **Submit.** A client submits node-named tasks — for example, moving a robot from
    `P5` to `P1` — either through the REST API of `movement_request_server` or as a
-   FIWARE `TaskRequest` received by `mapf_mrs`. Both entry points place the request
+   `TaskRequest` received by `mapf_mrs`. Both entry points place the request
    onto a shared Redis queue (`mapf_tasks`); neither performs any planning itself.
 2. **Plan.** The `adg_executor` retrieves the queued batch, translates the node names
    into map coordinates, and requests a plan from `mapf_solver`. The solver returns,
@@ -71,7 +71,7 @@ returned by `/mapf/monitor_task`.
 
 The map is defined by a single RMF YAML file listing named nodes and the lanes
 between them. It is shared by two consumers: `mapf_solver` reads it for path
-planning, and `fiware_map_server` publishes it to the FIWARE context broker so that
+planning, and `fiware_map_server` publishes it to the context broker so that
 other services can query the current map.
 
 ## Services inside the container
@@ -82,7 +82,7 @@ other services can query the current map.
 | `load_maps` | — (one-shot) | Loads YAML maps at startup |
 | `mapf_solver` | `8888` (HTTP) | MAPF path-planning solver (ECBS) |
 | `adg_executor` | `6333` (HTTP), `1932` (MQTT) | ADG execution engine |
-| `mapf_mrs` | `1933` (MQTT) | Movement request server (FIWARE) |
+| `mapf_mrs` | `1933` (MQTT) | Movement request server |
 | `movement_request_server` | `8009` (HTTP/FastAPI) | REST API for movement requests |
 
 ```
@@ -107,7 +107,7 @@ The launcher's port-`8888` health gate is what tells it MAPF is ready.
 The Task Orchestrator asks MAPF for collision-free paths; the solver plans them, the
 ADG executor drives execution, and the MRS/movement gateway turn plans into movement
 requests that ultimately become VDA5050 orders. Maps and robot positions are exchanged
-via the FIWARE context broker.
+via the context broker.
 
 ## Run
 
@@ -130,10 +130,10 @@ docker compose up -d                            # from mapf_unified_repo
 | --- | --- | --- |
 | `MQTT_SERVER_HOST` | `mosquitto` | MQTT broker hostname |
 | `REDIS_HOST` | `redis` | Redis hostname |
-| `CONTEXT_BROKER_HOST` | `scorpio` | FIWARE context broker |
+| `CONTEXT_BROKER_HOST` | `scorpio` | context broker |
 | `AMQP_HOST` | `rmf2_broker-rabbitmq-1` | RabbitMQ hostname |
 | `BUILDING_NAME` | `warehouse_os_setup_v2` | Map / building name |
-| `MAP_SERVER_PORT` | `7073` | FIWARE map server port |
+| `MAP_SERVER_PORT` | `7073` | map server port |
 
 See `.env` in the repo for the full list.
 

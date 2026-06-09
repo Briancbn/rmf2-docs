@@ -67,7 +67,7 @@ Both launchers call the same per-service control scripts (each takes `start` / `
 | `rmf2_res_mqtt_control.sh` | Mosquitto MQTT |
 | `rmf2_unified_mapf_control.sh` | MAPF unified container |
 | `task_orchestrator_control.sh` | Task Orchestrator |
-| `rmf2_res_vda5050_control.sh` | VDA5050 ↔ FIWARE bridge |
+| `rmf2_res_vda5050_control.sh` | VDA5050 bridge |
 
 Shared helpers (logging, health probes, container cleanup, status reporting) live in
 `start_environment_utils.sh`, sourced by both launchers.

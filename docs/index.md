@@ -50,7 +50,7 @@ features:
 
 ## What is this?
 
-A multi-agent warehouse robotics demo that integrates **FIWARE** context management,
+A multi-agent warehouse robotics demo that integrates context management,
 **VDA5050** AGV communication, **MAPF** multi-agent path finding, and a **Crossflow**
 task orchestrator — with an **Unreal Engine 5** simulation standing in for the physical
 robots.
@@ -63,12 +63,11 @@ repositories, each shipped as a Docker image:
 | --- | --- | --- |
 | [MAPF (unified)](/guide/mapf) | `mapf_unified_repo` | `mapf_unified:latest` |
 | [Task Orchestrator](/guide/task-orchestrator) | `task_orchestrator_repo` | `task_orchestrator:latest` |
-| [VDA5050 ↔ FIWARE](/guide/vda5050) | `vda5050_fiware_repo` | `vda5050_fiware:latest` |
+| [VDA5050](/guide/vda5050) | `vda5050_fiware_repo` | `vda5050_fiware_repo-vda5050_fiware:latest` |
 | [Simulation](/guide/simulation) | `simulation/` | UE5 packaged binary |
 | IOCS broker stack | `rmf2_broker_repo` | Scorpio / Redis / RabbitMQ / Postgres |
 
-> All containers share the Docker network `rmf2_broker_rmf-network`. See
-> [Ports & networking](/guide/ports) for the full port map.
+> All containers share the Docker network `rmf2_broker_rmf-network`.
 
 ## Quick Start
 

@@ -70,7 +70,7 @@ failure.
 docker logs mapf_unified --tail 30 -f
 # orchestrator drives the workflow
 docker logs task_orchestrator --tail 30 -f
-# state lands in FIWARE via the VDA5050 bridge
+# state lands in Scorpio via the VDA5050 bridge
 docker logs vda5050_fiware --tail 30 -f
 ```
 

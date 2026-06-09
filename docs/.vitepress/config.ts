@@ -39,7 +39,6 @@ export default withMermaid(defineConfig({
           text: 'How-tos',
           items: [
             { text: 'Launch scripts', link: '/guide/launch-scripts' },
-            { text: 'Ports & networking', link: '/guide/ports' },
           ]
         },
         {
