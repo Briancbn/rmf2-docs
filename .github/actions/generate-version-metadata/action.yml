@@ -1,0 +1,22 @@
+name: Generate Version Metadata
+inputs:
+  ref_name:
+    required: false
+    type: string
+    default: ${{ github.ref_name }}
+
+outputs:
+  version:
+    description: 'Generated Docs version'
+    value: ${{ steps.meta.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Convert to Version Metadata
+      id: meta
+      shell: bash
+      run: |
+        VERSION_METADATA=$(node ./scripts/generate-version-metadata ${{ inputs.ref_name }})
+        echo "Version: $VERSION_METADATA"
+        echo "version=$VERSION_METADATA" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,73 @@
+name: Deploy
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - legacy
+    tags:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          version: 11
+      - name: Use Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Generate Version String
+        id: meta
+        uses: ./.github/actions/generate-version-metadata
+        with:
+          ref_name: ${{ github.ref_name }}
+      - name: Build
+        run: pnpm docs:build --base /${{ steps.meta.outputs.version }}/
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: rmf2-docs-latest
+          path: docs/.vitepress/dist
+
+  deploy:
+    if: github.event_name != 'push_request'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out minimal build files
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            .github
+            scripts
+      - name: Generate Version String
+        id: meta
+        uses: ./.github/actions/generate-version-metadata
+        with:
+          ref_name: ${{ github.ref_name }}
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: rmf2-docs-latest
+          path: dist
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Deploy to S3
+        run: |
+          aws s3 sync dist/ s3://${{ secrets.AWS_S3_BUCKET_NAME }}/${{ steps.meta.outputs.version }} --delete --only-show-errors
