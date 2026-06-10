@@ -18,10 +18,6 @@ export default defineConfig({
             text: 'latest',
             link: 'http://dev.rmf-industrial.org'
           },
-          {
-            text: 'legacy',
-            link: 'http://dev.rmf-industrial.org/legacy'
-          },
         ]
       }
     ],
