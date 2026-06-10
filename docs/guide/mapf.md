@@ -133,20 +133,17 @@ ADG executor drives execution, and the MRS/movement gateway turn plans into move
 requests that ultimately become VDA5050 orders. Maps and robot positions are exchanged
 via the context broker.
 
-## Run
+## MAPF Simulation and Testing
 
-Via the demo launcher (recommended):
+The quickest way to *see* MAPF working — no full stack required — is to send one
+problem straight to the solver and render the collision-free plan as a GIF. See the
+**MAPF Solver Test + Visualization** guide in the `ros_industrial_demo` repository,
+under `test_scripts/mapf/README.md`.
 
-```bash
-./rmf2_unified_mapf_control.sh start   # or: start_environment_tmux.sh (step 4)
-```
 
-Standalone:
+### Demo
+![Three random agents solved by the MAPF solver and rendered as a collision-free plan](/demo/mapf-solver-test.gif)
 
-```bash
-docker network create rmf2_broker_rmf-network   # if needed
-docker compose up -d                            # from mapf_unified_repo
-```
 
 ## Key environment variables
 
@@ -159,4 +156,4 @@ docker compose up -d                            # from mapf_unified_repo
 | `BUILDING_NAME` | `warehouse_os_setup_v2` | Map / building name |
 | `MAP_SERVER_PORT` | `7073` | map server port |
 
-See `.env` in the repo for the full list.
+See `.env` in the `mapf_unified_repo` for the full list. 
