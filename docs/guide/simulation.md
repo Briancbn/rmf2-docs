@@ -25,6 +25,8 @@ flowchart LR
   sim -- "task_status / asset_status" --> broker
   broker --> you
 ```
+![Simulation](/demo/simulation-overview.png)
+
 
 ## Control an AGV (VDA5050)
 
@@ -196,25 +198,25 @@ publishes and waits for completion.
 
 **2. Lift the rack** — `send_device 10 liftrack` (addressed to the AGV serial)
 
-![Drive to rack](/demo/step-01.png)
+![Drive to rack](/demo/simulation-step-01.png)
 
 **3. Drive to the manipulator station** — `send_agv 10 P501`
 
 **4. Depalletize — load cargo onto the rack** — `send_device ManipulatorRobot1 depalletize`
 
-![Depalletize](/demo/step-02.png)
+![Depalletize](/demo/simulation-step-02.png)
 
 **5. Drive to the conveyor** — `send_agv 10 P619`
 
 **6. Conveyor dropoff** — `send_device Conveyor1 dropoff`
 
-![Conveyor dropoff](/demo/step-03.png)
+![Conveyor dropoff](/demo/simulation-step-03.png)
 
 **7. Drive to the drop point** — `send_agv 10 P68`
 
 **8. Drop the rack** — `send_device 10 droprack`
 
-![Drop rack](/demo/step-04.png)
+![Drop rack](/demo/simulation-step-04.png)
 
 
 
