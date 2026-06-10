@@ -36,18 +36,19 @@ export default withMermaid(defineConfig({
           ]
         },
         {
-          text: 'How-tos',
-          items: [
-            { text: 'Launch scripts', link: '/guide/launch-scripts' },
-          ]
-        },
-        {
           text: 'Module Documentation',
           items: [
             { text: 'Simulation (UE5)', link: '/guide/simulation' },
             { text: 'VDA5050 — Master & Client', link: '/guide/vda5050' },
             { text: 'MAPF (unified)', link: '/guide/mapf' },
             { text: 'Task & Task Orchestrator', link: '/guide/task-orchestrator' },
+          ]
+        },
+      {
+          text: 'How-tos',
+          items: [
+            { text: 'Launch scripts', link: '/guide/launch-scripts' },
+            { text: 'Create a workflow', link: '/guide/create-workflow' },
           ]
         },
         { text: 'Config & API References', link: '/references/overview' },
