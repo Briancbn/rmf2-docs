@@ -1,8 +1,7 @@
 # Launch scripts
 
-The `ros_industrial_demo/launch` directory orchestrates the whole stack. There are two
-generations of launcher; the **tmux** generation is recommended because each step is
-visible in its own pane.
+The `ros_industrial_demo/launch` directory orchestrates the whole stack. The **tmux**
+launcher runs each step in its own pane, so every service is visible as it comes up.
 
 ## `start_environment_tmux.sh`
 
@@ -59,21 +58,13 @@ Steps 8 (Init) and 9 (Send Task) are one-shot, so teardown covers steps 7 → 1.
 
 ## Control scripts
 
-Both launchers call the same per-service control scripts (each takes `start` / `stop`):
+The launcher calls per-service control scripts (each takes `start` / `stop`):
 
 | Script | Service |
 | --- | --- |
-| `rmf2_res_broker_control.sh` | IOCS broker stack |
-| `rmf2_res_mqtt_control.sh` | Mosquitto MQTT |
 | `rmf2_unified_mapf_control.sh` | MAPF unified container |
 | `task_orchestrator_control.sh` | Task Orchestrator |
 | `rmf2_res_vda5050_control.sh` | VDA5050 bridge |
-
-Shared helpers (logging, health probes, container cleanup, status reporting) live in
-`start_environment_utils.sh`, sourced by both launchers.
-
-## Legacy launchers
-
-`start_environment.sh` / `stop_environment.sh` drive the same services through the
-dashboard's HTTP API instead of tmux panes. They still work but give no per-service
-output, which is why the tmux launchers exist.
+| `simulation/Linux/RMF2_SIM.sh` | UE5 simulation binary |
+| `rmf2_res_mqtt_control.sh` | Mosquitto MQTT |
+| `rmf2_res_broker_control.sh` | IOCS broker stack |
