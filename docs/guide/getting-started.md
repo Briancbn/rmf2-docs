@@ -1,4 +1,4 @@
-# Installation
+# Getting Started
 
 This page takes you from a clean Ubuntu 22.04 / ROS 2 Humble machine to a running demo.
 

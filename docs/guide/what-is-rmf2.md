@@ -31,9 +31,6 @@ orchestration, AGV protocol, simulation — independent and replaceable. You can
 or deploy any module on its own, and continuously ship isolated features without disturbing
 the rest of the fleet.
 
-The integration hub is the [`ros_industrial_demo`](/guide/launch-scripts) repository, which
-provides the launch/teardown orchestration. Each module lives in a sibling repository and
-runs as a container on the shared Docker network:
 
 | Module | Repo | Image |
 | --- | --- | --- |
@@ -45,4 +42,4 @@ runs as a container on the shared Docker network:
 
 > All containers share the Docker network `rmf2_broker_rmf-network`.
 
-See [Getting started](/guide/getting-started) to bring the whole stack up.
+See [Architecture](/guide/architecture) for how the modules fit together.

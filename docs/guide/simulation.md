@@ -7,11 +7,6 @@ The UE5 simulation spins up the **robot side** of the system:
 
 You control all of it over **MQTT** on the broker at `localhost:1883`.
 
-> The sim must be running first (via the demo launcher, or `~/ros_industrial_ws/simulation/RMF2_new_sim.sh`).
-
-You talk to the simulation **directly over MQTT**, driving AGVs
-with VDA5050 `order` messages and devices with `task_request` messages.
-
 ```mermaid
 flowchart LR
   you([You / test scripts])
@@ -34,7 +29,7 @@ The simulation starts in fullscreen mode by default.
 - Map marker: `M`
 
 
-## Control an AGV (VDA5050)
+## Control an AGV (VDA5050) via Mqtt
 
 Drive an AGV by publishing a VDA5050 **order** to:
 
@@ -96,7 +91,7 @@ The AGV has **arrived** when its `/state` reports `lastNodeId == <your nodeId>` 
 }
 ```
 
-## Control a device (`task_request`)
+## Control a device (`task_request`) via Mqtt
 
 Trigger a device action by publishing a `TaskRequest` to:
 

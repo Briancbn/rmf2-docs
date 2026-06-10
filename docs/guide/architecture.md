@@ -46,5 +46,4 @@ ros_industrial_ws/
 └── simulation/               # UE5 packaged binary
 ```
 
-To bring everything up, see [Installation](/guide/getting-started) and
-[Launch scripts](/guide/launch-scripts).
+To bring everything up, see [Getting Started](/guide/getting-started) 
