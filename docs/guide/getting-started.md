@@ -49,29 +49,30 @@ git clone -b legacy <rmf2-broker-url> rmf2_broker_repo
 ## Build the images
 
 ```bash
-cd ~/ros_industrial_ws
-
 # IOCS broker stack (Scorpio, Redis, RabbitMQ, Postgres)
-cd rmf2_broker_repo
+cd ~/ros_industrial_ws/rmf2_broker_repo
 docker build -f ./Containers/rmf-base.Dockerfile . -t mctdis/rmf-base
 docker compose build
 cd ..
 
 # VDA5050 bridge
-cd vda5050_fiware_repo && docker build -t vda5050_fiware_repo-vda5050_fiware:latest . && cd ..
+cd ~/ros_industrial_ws/vda5050_fiware_repo 
+docker build -t vda5050_fiware_repo-vda5050_fiware:latest .
 
 # MAPF unified (map server + solver + executor + MRS + movement gateway)
-cd mapf_unified_repo && docker build -t mapf_unified:latest . && cd ..
+cd ~/ros_industrial_ws/mapf_unified_repo 
+docker build -t mapf_unified:latest .
 
 # Task Orchestrator (Rust)
-cd task_orchestrator_repo && docker build -t task_orchestrator:latest . && cd ..
+cd ~/ros_industrial_ws/task_orchestrator_repo 
+docker build -t task_orchestrator:latest .
 ```
 
 ::: tip
 First-time builds are slow: MAPF ~10–15 min, VDA5050 ~5–10 min.
 :::
 
-## Set up the warehouse simulation
+## Download & Launch the warehouse simulation
 
 Download and unpack the latest UE5 simulation build:
 
@@ -96,7 +97,7 @@ The simulation starts in fullscreen mode by default.
 - Toggle fullscreen: `Alt + Enter`
 - Map marker: `M`
 
-## Bring the environment up
+## Launch the environment
 
 The recommended launcher runs each startup step in its **own tmux pane** and gates on a
 health check before moving on:
@@ -104,26 +105,20 @@ health check before moving on:
 ```bash
 cd ~/ros_industrial_ws/ros_industrial_demo/launch
 ./start_environment_tmux.sh
+
+# tear down
+# ./stop_environment_tmux.sh          # graceful, reverse order, kills the tmux session
 ```
 
 What it does, in order (see [Launch scripts](/guide/launch-scripts) for the full table):
 
-1. **Dashboard** — `rmf2-launcher` HTTP API on `:8083`
-2. **Broker (IOCS)** — Scorpio / Redis / RabbitMQ / Postgres
-3. **MQTT** — Mosquitto
-4. **MAPF (unified)** — map server, solver `:8888`, executor, MRS
-5. **Task Orchestrator** — Rust workflow engine `:2727`
-6. **Devices (VDA5050)** — VDA5050 bridge
-7. **Simulation** — UE5 warehouse binary
-8. **Init System** — register robots / locations with the context broker
-9. **Send Task** — submit a sample workflow
+## Send a Demo Task to the Task Orchestrator
 
-If a step fails its health gate, the launcher dumps that pane's last lines and leaves
-the session running so you can inspect it.
-
-## Tear it down
+Publish a parallel workflow to the Task Orchestrator. This workflow forks into multiple robot tasks and joins when all robots complete their work.
 
 ```bash
-./stop_environment_tmux.sh          # graceful, reverse order, kills the tmux session
-./stop_environment_tmux.sh --hard   # also force-removes leftover containers/ports
+cd ~/ros_industrial_ws/ros_industrial_demo/test_scripts/taskorchestrator
+python3 send_workflow.py
 ```
+![Demo_TaskOrchestrator](/demo/demos-step-02.png)
+
