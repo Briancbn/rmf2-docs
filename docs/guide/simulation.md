@@ -27,6 +27,12 @@ flowchart LR
 ```
 ![Simulation](/demo/simulation-overview.png)
 
+The simulation starts in fullscreen mode by default.
+
+- Move: `W A S D`
+- Toggle fullscreen: `Alt + Enter`
+- Map marker: `M`
+
 
 ## Control an AGV (VDA5050)
 

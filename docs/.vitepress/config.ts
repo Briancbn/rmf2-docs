@@ -45,9 +45,9 @@ export default withMermaid(defineConfig({
           text: 'Module Documentation',
           items: [
             { text: 'Simulation (UE5)', link: '/guide/simulation' },
-            { text: 'Task & Task Orchestrator', link: '/guide/task-orchestrator' },
-            { text: 'MAPF (unified)', link: '/guide/mapf' },
             { text: 'VDA5050 — Master & Client', link: '/guide/vda5050' },
+            { text: 'MAPF (unified)', link: '/guide/mapf' },
+            { text: 'Task & Task Orchestrator', link: '/guide/task-orchestrator' },
           ]
         },
         { text: 'Config & API References', link: '/references/overview' },
