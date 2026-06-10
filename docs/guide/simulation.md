@@ -1,12 +1,30 @@
 # Simulation (UE5)
 
-The UE5 simulation plays the **robot side** of the system. You control it entirely over
-**MQTT** on the broker at `localhost:1883`. There are exactly two things to control:
+The UE5 simulation spins up the **robot side** of the system:
 
 - **AGVs** — the mobile robots, driven with **VDA5050** `order` messages.
-- **Devices** — manipulators, conveyors and rack lift/drop, driven with `task_request`.
+- **Devices** — robotic arms, conveyors and racks, driven with `task_request` messages.
+
+You control all of it over **MQTT** on the broker at `localhost:1883`.
 
 > The sim must be running first (via the demo launcher, or `~/ros_industrial_ws/simulation/RMF2_new_sim.sh`).
+
+You talk to the simulation **directly over MQTT**, driving AGVs
+with VDA5050 `order` messages and devices with `task_request` messages.
+
+```mermaid
+flowchart LR
+  you([You / test scripts])
+  broker[("MQTT broker<br/>localhost:1883")]
+  sim["UE5 simulation<br/>(robot side)"]
+
+  you -- "VDA5050 order" --> broker
+  you -- "task_request" --> broker
+  broker --> sim
+  sim -- "state / connection" --> broker
+  sim -- "task_status / asset_status" --> broker
+  broker --> you
+```
 
 ## Control an AGV (VDA5050)
 
@@ -174,45 +192,31 @@ instead. The script connects to the broker at `localhost:1883` and prints each s
 publishes and waits for completion.
 :::
 
-> The images below are **placeholders** — drop in real screenshots/GIFs from a sim run.
-
-![Full demo](/demo/overview.svg)
-
 **1. Drive to the rack pickup point** — `send_agv 10 P123`
-
-![Drive to rack](/demo/step-01.svg)
 
 **2. Lift the rack** — `send_device 10 liftrack` (addressed to the AGV serial)
 
-![Lift rack](/demo/step-02.svg)
+![Drive to rack](/demo/step-01.png)
 
 **3. Drive to the manipulator station** — `send_agv 10 P501`
 
-![Drive to manipulator](/demo/step-03.svg)
-
 **4. Depalletize — load cargo onto the rack** — `send_device ManipulatorRobot1 depalletize`
 
-![Depalletize](/demo/step-04.svg)
+![Depalletize](/demo/step-02.png)
 
 **5. Drive to the conveyor** — `send_agv 10 P619`
 
-![Drive to conveyor](/demo/step-05.svg)
-
 **6. Conveyor dropoff** — `send_device Conveyor1 dropoff`
 
-![Conveyor dropoff](/demo/step-06.svg)
+![Conveyor dropoff](/demo/step-03.png)
 
 **7. Drive to the drop point** — `send_agv 10 P68`
 
-![Drive to drop point](/demo/step-07.svg)
-
 **8. Drop the rack** — `send_device 10 droprack`
 
-![Drop rack](/demo/step-08.svg)
+![Drop rack](/demo/step-04.png)
 
-**9. Clear out** — `send_agv 10 P142`
 
-![Clear out](/demo/step-09.svg)
 
 ## Drive it with the test scripts
 
