@@ -42,9 +42,33 @@ different assumption about time to each.
 In short, the fleet is *planned* as though perfectly synchronized, yet *executed* as
 a set of dependencies that remain safe under real-world timing.
 
+The diagram below traces one concrete crossing through both phases: robot 1 passes
+through the shared node `X` first, so robot 2 is planned to wait one timestep — and at
+execution that wait becomes a dependency on robot 1 actually vacating `X`.
+
+```mermaid
+flowchart TB
+  subgraph P["Planned as if synchronized — ECBS, one shared clock"]
+    direction LR
+    r1a["R1 @ A<br/>t = 0"] --> r1b["R1 @ X<br/>t = 1"] --> r1c["R1 @ B<br/>t = 2"]
+    r2a["R2 @ C<br/>t = 0"] --> r2b["R2 @ C<br/>t = 1 · wait"] --> r2c["R2 @ X<br/>t = 2"] --> r2d["R2 @ D<br/>t = 3"]
+  end
+
+  P ==>|"compile timesteps into a partial order"| E
+
+  subgraph E["Executed as dependencies — ADG, no shared clock"]
+    direction LR
+    e1a["R1: A→X"] --> e1b["R1: X→B"]
+    e2a["R2: C→X"] --> e2b["R2: X→D"]
+    e1b -. "wait: X vacated" .-> e2a
+  end
+```
+
 ### Request → plan → execute
 
 A movement request progresses through the services in a single direction.
+
+![Request → plan → execute: a movement request flows Client → Submit → Redis queue → Plan · Compile · Execute, dispatches VDA5050 orders to robots, and records task status back in Redis](/demo/mapf-request-flow.svg)
 
 1. **Submit.** A client submits node-named tasks — for example, moving a robot from
    `P5` to `P1` — either through the REST API of `movement_request_server` or as a
@@ -136,68 +160,3 @@ docker compose up -d                            # from mapf_unified_repo
 | `MAP_SERVER_PORT` | `7073` | map server port |
 
 See `.env` in the repo for the full list.
-
-## Deploying a new map
-
-1. Copy the map YAML into **both** source dirs:
-   ```bash
-   cp my_warehouse.yaml src/mapf/mapf_service/mapf_service/maps/   # solver
-   cp my_warehouse.yaml src/fiware_map/maps/                       # context broker
-   ```
-2. Set `BUILDING_NAME="my_warehouse"` in `.env`.
-3. Rebuild the image.
-
-The repo also ships `MAP_CHANGE_GUIDE.md` with the detailed procedure.
-
-## Try it directly (send to test)
-
-The cleanest direct entry point is the **movement request gateway** (FastAPI), which
-enqueues a planning task and lets you poll its status. In the demo (unified container)
-it's on **`:8009`**; standalone it defaults to `:8000`.
-
-```bash
-# Submit a planning task: move robot_1 from waypoint P5 to P1
-curl --location 'http://localhost:8009/mapf/send_task' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "tasks": [
-      { "task_id": "t1", "robot_id": "robots_robot_1", "start_location": "P5", "goal_location": "P1" }
-    ]
-  }'
-
-# Poll its status
-curl 'http://localhost:8009/mapf/monitor_task?task_id=t1'
-# verbose variant:
-curl 'http://localhost:8009/mapf/monitor_task_verbose?task_id=t1'
-```
-
-Expected `monitor_task` shape — `status` is one of `QUEUED`, `IN_PROGRESS`,
-`COMPLETED`, `FAILED`, or `missing` if the executor hasn't picked up that task id yet:
-
-```json
-{ "tasks": [ { "task_id": "t1", "status": "IN_PROGRESS" } ] }
-```
-
-Watch execution as it happens:
-
-```bash
-docker logs mapf_unified --tail 30 -f      # all MAPF services (unified container)
-```
-
-::: warning Broken shell testers
-`test_scripts/send_test_tasks_*_robots.sh`, `send_all_home.sh`, and `loop_tasks.sh` all
-call **`test_replace_destination.py`, which is missing from the repo** — so they fail as
-shipped. Use the `/mapf/send_task` curl above (or the
-[Task Orchestrator workflow sender](/guide/task-orchestrator#try-it-directly-send-to-test))
-until that script is restored.
-:::
-
-## Troubleshooting
-
-```bash
-docker logs mapf_unified --tail 50
-curl -s http://localhost:8888/ >/dev/null && echo "solver up" || echo "solver down"
-```
-
-If the launcher reports `Timeout waiting for port 8888`, the container failed to start —
-check the image was built and the logs above.
