@@ -30,9 +30,9 @@ export default withMermaid(defineConfig({
           text: 'Introduction',
           items: [
             { text: 'What is RMF-Industrial?', link: '/guide/what-is-rmf2' },
+            { text: 'Architecture', link: '/guide/architecture' },
             { text: 'Getting Started', link: '/guide/getting-started' },
             { text: 'Demos', link: '/guide/demos' },
-            { text: 'Architecture', link: '/guide/architecture' },
           ]
         },
         {

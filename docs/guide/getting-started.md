@@ -119,40 +119,11 @@ What it does, in order (see [Launch scripts](/guide/launch-scripts) for the full
 9. **Send Task** — submit a sample workflow
 
 If a step fails its health gate, the launcher dumps that pane's last lines and leaves
-the session running so you can inspect it:
-
-```bash
-tmux attach -t ihi_demo
-```
-
-## Check status
-
-```bash
-./start_environment_tmux.sh --status
-```
-
-Shows which ports are bound, which containers are running, and the tmux session state.
+the session running so you can inspect it.
 
 ## Tear it down
 
 ```bash
 ./stop_environment_tmux.sh          # graceful, reverse order, kills the tmux session
 ./stop_environment_tmux.sh --hard   # also force-removes leftover containers/ports
-```
-
-## Troubleshooting
-
-| Symptom | Likely cause | Fix |
-| --- | --- | --- |
-| `Timeout waiting for port 8888` | MAPF container didn't start | `docker logs mapf_unified --tail 50`; check the image was built |
-| `Network not found` | shared network missing | `docker network create rmf2_broker_rmf-network` |
-| `Port already in use` | host broker still running | stop it via `systemctl` (see above) |
-| Robots never appear | init step skipped/failed | re-run the init script; check VDA5050 + Scorpio logs |
-
-```bash
-# Handy log commands
-docker logs mapf_unified --tail 50
-docker logs vda5050_fiware --tail 50
-docker logs task_orchestrator --tail 50
-docker logs rmf2_broker-scorpio-1 --tail 50
 ```

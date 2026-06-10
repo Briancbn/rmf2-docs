@@ -25,6 +25,11 @@ features:
     details: Large Scale Photorealistic Simulation / Digital Twin in Unreal Engine.
     link: /guide/simulation
   - icon:
+      src: /icons/FcApproval.svg
+    title: VDA5050 Support
+    details: Out-of-box support and tooling for VDA5050 Compatibility.
+    link: /guide/vda5050
+  - icon:
       src: /icons/FcMindMap.svg
     title: Multi-Agent Path Finding and Execution
     details: Scalable route planning and deterministic execution.
@@ -34,48 +39,33 @@ features:
     title: Workflow Orchestration
     details: Effortless Workflow definition and customization.
     link: /guide/task-orchestrator
-  - icon:
-      src: /icons/FcTimeline.svg
-    title: Task Scheduling
-    details: Highly Efficient Task Scheduling for Machines, Humanoids and Mobile Robots.
-  - icon:
-      src: /icons/FcApproval.svg
-    title: VDA5050 Support
-    details: Out-of-box support and tooling for VDA5050 Compatibility.
-    link: /guide/vda5050
-  - icon: 🚀
-    title: Fast Deployment
-    details: Continuous Delivery through building, testing, and shipping isolated features as microservices.
+  # - icon:
+  #     src: /icons/FcTimeline.svg
+  #   title: Task Scheduling
+  #   details: Highly Efficient Task Scheduling for Machines, Humanoids and Mobile Robots.
+  # - icon: 🚀
+  #   title: Fast Deployment
+  #   details: Continuous Delivery through building, testing, and shipping isolated features as microservices.
 ---
 
 ## What is this?
 
-A multi-agent warehouse robotics demo that integrates context management,
-**VDA5050** AGV communication, **MAPF** multi-agent path finding, and a **Crossflow**
-task orchestrator — with an **Unreal Engine 5** simulation standing in for the physical
-robots.
+A modular fleet management system for manufacturing and logistics — a photorealistic
+**Unreal Engine 5 Simulation** standing in for the physical robots, **VDA5050** AGV
+communication, **MAPF** multi-agent path finding, and a Crossflow **Task Orchestrator**.
+Each piece runs as its own container, so you can swap, test, or deploy any module on its own.
 
-The integration hub is the [`ros_industrial_demo`](/guide/launch-scripts) repository,
-which provides the launch/teardown orchestration. The heavy lifting lives in sibling
-repositories, each shipped as a Docker image:
+→ See [What is RMF Industrial](/guide/what-is-rmf2) for the full breakdown.
 
-| Module | Repo | Image |
-| --- | --- | --- |
-| [Task Orchestrator](/guide/task-orchestrator) | `task_orchestrator_repo` | `task_orchestrator:latest` |
-| [MAPF (unified)](/guide/mapf) | `mapf_unified_repo` | `mapf_unified:latest` |
-| [VDA5050](/guide/vda5050) | `vda5050_fiware_repo` | `vda5050_fiware_repo-vda5050_fiware:latest` |
-| [Simulation](/guide/simulation) | `simulation/` | UE5 packaged binary |
-| IOCS broker stack | `rmf2_broker_repo` | Scorpio / Redis / RabbitMQ / Postgres |
+## How these docs work
 
-> All containers share the Docker network `rmf2_broker_rmf-network`.
+Read them in order:
 
-## Quick Start
+1. **[What is RMF Industrial](/guide/what-is-rmf2)** — the big picture and the modules
+2. **[Architecture](/guide/architecture)** — how the pieces fit together
+3. **[Getting started](/guide/getting-started)** — build the images and bring the stack up
+4. **[Demos](/guide/demos)** — run it end to end
 
-```bash
-cd ~/ros_industrial_ws/ros_industrial_demo/launch
-./start_environment_tmux.sh      # bring the whole stack up, one step per tmux pane
-./start_environment_tmux.sh --status
-./stop_environment_tmux.sh       # tear it back down
-```
-
-See [Getting started](/guide/getting-started) for prerequisites and the full sequence.
+From there, each module has its own page — **[Simulation](/guide/simulation)**,
+**[VDA5050](/guide/vda5050)**, **[MAPF](/guide/mapf)**, and
+**[Task Orchestrator](/guide/task-orchestrator)** — dive into whichever you need.
