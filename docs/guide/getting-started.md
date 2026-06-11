@@ -120,5 +120,5 @@ Publish a parallel workflow to the Task Orchestrator. This workflow forks into m
 cd ~/ros_industrial_ws/ros_industrial_demo/test_scripts/taskorchestrator
 python3 send_workflow.py
 ```
-![Demo_TaskOrchestrator](/demo/demos-step-02.png)
+<!-- ![Demo_TaskOrchestrator](/demo/demos-step-02.png) -->
 
