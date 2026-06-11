@@ -315,5 +315,5 @@ before running.
 
 ```bash
 docker logs task_orchestrator --tail 50
-curl -s http://localhost:2727/health_check && echo " ← orchestrator up"
+curl -sf http://localhost:2727/health_check && echo "orchestrator up"
 ```
