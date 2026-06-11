@@ -94,9 +94,9 @@ Download and unpack the latest UE5 simulation build:
 
 ```bash
 cd ~/ros_industrial_ws
-curl -OL https://downloads.rmf-industrial.org/UE5Demos/RMF2_SIM_20260606.zip
-unzip RMF2_SIM_20260606.zip
-mv RMF2_SIM_20260606 ~/ros_industrial_ws/simulation
+curl -OL https://downloads.rmf-industrial.org/UE5Demos/RMF2_SIM_20260611.zip
+unzip RMF2_SIM_20260611.zip
+mv RMF2_SIM_20260611 ~/ros_industrial_ws/simulation
 ```
 
 You can launch it standalone to verify it runs (the launcher also starts it as one of
