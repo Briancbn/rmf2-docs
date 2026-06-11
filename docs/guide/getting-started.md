@@ -39,38 +39,54 @@ mkdir -p ~/ros_industrial_ws
 cd ~/ros_industrial_ws
 
 # Clone repositories (legacy branch)
-git clone -b legacy <demo-package-url> ros_industrial_demo
-git clone -b legacy <vda5050-fiware-url> vda5050_fiware_repo
-git clone -b legacy <mapf-unified-url> mapf_unified_repo
-git clone -b legacy <task-orchestrator-url> task_orchestrator_repo
-git clone -b legacy <rmf2-broker-url> rmf2_broker_repo
+git clone -b legacy <https://github.com/ros-industrial/rmf_industrial.git> ros_industrial_demo
+git clone -b legacy <https://github.com/ros-industrial/vda5050_core.git> vda5050_fiware_repo
+git clone -b legacy <https://github.com/ros-industrial/res_mapf.git> mapf_unified_repo
+git clone -b legacy <https://github.com/ros-industrial/rmf2_task_orchestrator.git> task_orchestrator_repo
+git clone -b legacy <https://github.com/ros-industrial/rmf2_broker.git> rmf2_broker_repo
 ```
 
 ## Build the images
 
 ```bash
-# IOCS broker stack (Scorpio, Redis, RabbitMQ, Postgres)
-cd ~/ros_industrial_ws/rmf2_broker_repo
-docker build -f ./Containers/rmf-base.Dockerfile . -t mctdis/rmf-base
-docker compose build
-cd ..
-
-# VDA5050 bridge
-cd ~/ros_industrial_ws/vda5050_fiware_repo 
+# VDA5050 FIWARE Bridge
+cd ~/ros_industrial_ws/vda5050_fiware_repo
 docker build -t vda5050_fiware_repo-vda5050_fiware:latest .
 
-# MAPF unified (map server + solver + executor + MRS + movement gateway)
-cd ~/ros_industrial_ws/mapf_unified_repo 
+# MAPF Unified (includes map server, solver, executor)
+cd ~/ros_industrial_ws/mapf_unified_repo
 docker build -t mapf_unified:latest .
 
-# Task Orchestrator (Rust)
-cd ~/ros_industrial_ws/task_orchestrator_repo 
-docker build -t task_orchestrator:latest .
+# Task Orchestrator
+cd ~/ros_industrial_ws/task_orchestrator_repo/
+docker build -t rmf2_task_orchestrator:latest .
+
+# IOCS Broker Stack (Scorpio, Redis, RabbitMQ, Postgres)
+cd ~/ros_industrial_ws/rmf2_broker_repo
+docker  build -f ./Containers/rmf-base.Dockerfile . -t mctdis/rmf-base
+docker compose build
+
 ```
 
 ::: tip
 First-time builds are slow: MAPF ~10–15 min, VDA5050 ~5–10 min.
 :::
+
+## Launch the environment
+
+The recommended launcher runs each startup step in its **own tmux pane** and gates on a
+health check before moving on:
+
+```bash
+cd ~/ros_industrial_ws/ros_industrial_demo/launch
+./start_environment_tmux.sh
+
+# tear down
+# ./stop_environment_tmux.sh          # graceful, reverse order, kills the tmux session
+```
+
+What it does, in order (see [Launch scripts](/guide/launch-scripts) for the full table):
+
 
 ## Download & Launch the warehouse simulation
 
@@ -97,21 +113,6 @@ The simulation starts in fullscreen mode by default.
 - Toggle fullscreen: `Alt + Enter`
 - Map marker: `M`
 
-## Launch the environment
-
-The recommended launcher runs each startup step in its **own tmux pane** and gates on a
-health check before moving on:
-
-```bash
-cd ~/ros_industrial_ws/ros_industrial_demo/launch
-./start_environment_tmux.sh
-
-# tear down
-# ./stop_environment_tmux.sh          # graceful, reverse order, kills the tmux session
-```
-
-What it does, in order (see [Launch scripts](/guide/launch-scripts) for the full table):
-
 ## Send a Demo Task to the Task Orchestrator
 
 Publish a parallel workflow to the Task Orchestrator. This workflow forks into multiple robot tasks and joins when all robots complete their work.
@@ -120,5 +121,5 @@ Publish a parallel workflow to the Task Orchestrator. This workflow forks into m
 cd ~/ros_industrial_ws/ros_industrial_demo/test_scripts/taskorchestrator
 python3 send_workflow.py
 ```
-<!-- ![Demo_TaskOrchestrator](/demo/demos-step-02.png) -->
+![Demo_TaskOrchestrator](/demo/to.gif)
 
