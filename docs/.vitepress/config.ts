@@ -42,6 +42,8 @@ export default withMermaid(defineConfig({
             { text: 'VDA5050 — Master & Client', link: '/guide/vda5050' },
             { text: 'MAPF (unified)', link: '/guide/mapf' },
             { text: 'Task & Task Orchestrator', link: '/guide/task-orchestrator' },
+            { text: 'Scheduler', link: '/guide/scheduler' },
+            { text: 'UI', link: '/guide/ui' },
           ]
         },
       {
