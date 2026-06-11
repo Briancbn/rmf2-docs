@@ -1,10 +1,15 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons'
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: "RMF-Industrial",
   description: "RMF2 Documentation",
+  // localhost URLs in module docs are runtime endpoints, not site links
+  ignoreDeadLinks: [
+    /^https?:\/\/localhost/,
+  ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     siteTitle: "RMF Industrial",
@@ -29,17 +34,27 @@ export default defineConfig({
           text: 'Introduction',
           items: [
             { text: 'What is RMF-Industrial?', link: '/guide/what-is-rmf2' },
+            { text: 'Architecture', link: '/guide/architecture' },
             { text: 'Getting Started', link: '/guide/getting-started' },
-          ]
-        },
-        {
-          text: 'Guide',
-          items: [
+            { text: 'Demos', link: '/guide/demos' },
           ]
         },
         {
           text: 'Module Documentation',
           items: [
+            { text: 'Simulation (UE5)', link: '/guide/simulation' },
+            { text: 'VDA5050 — Master & Client', link: '/guide/vda5050' },
+            { text: 'MAPF (unified)', link: '/guide/mapf' },
+            { text: 'Task & Task Orchestrator', link: '/guide/task-orchestrator' },
+            { text: 'Scheduler', link: '/guide/scheduler' },
+            { text: 'UI', link: '/guide/ui' },
+          ]
+        },
+      {
+          text: 'How-tos',
+          items: [
+            { text: 'Launch scripts', link: '/guide/launch-scripts' },
+            { text: 'Create a workflow', link: '/guide/create-workflow' },
           ]
         },
         { text: 'Config & API References', link: '/references/overview' },
@@ -59,6 +74,7 @@ export default defineConfig({
       { icon: 'github', link: 'https://github.com/ros-industrial/rmf_industrial' }
     ]
   },
+  mermaid: {},
   markdown: {
     config(md) {
       md.use(groupIconMdPlugin)
@@ -67,6 +83,6 @@ export default defineConfig({
   vite: {
     plugins: [
       groupIconVitePlugin()
-    ],
+    ]
   }
-})
+}))

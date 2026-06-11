@@ -1,85 +1,45 @@
 # What is RMF Industrial (RMF2)?
 
-This page demonstrates some of the built-in markdown extensions provided by VitePress.
+RMF2.0 is inspired by the [Open-RMF](https://www.open-rmf.org/) project, where
+**interoperability** across a mixed fleet is the central concern.
 
-## Syntax Highlighting
+It provides **open-source tooling for distinct, composable modules** that together make up
+a fleet management system for **manufacturing and logistics** — letting heterogeneous
+robots and devices (AGVs, robotic arms, conveyors, racks) work as one fleet.
 
-VitePress provides Syntax Highlighting powered by [Shiki](https://github.com/shikijs/shiki), with additional features like line-highlighting:
+## What it offers
 
-**Input**
+Each capability is an independent, swappable module, shipped as its own Docker image:
 
-````md
-```js{4}
-export default {
-  data () {
-    return {
-      msg: 'Highlighted!'
-    }
-  }
-}
-```
-````
+### Simulation & Digital Twin
+Large-scale photorealistic simulation / digital twin in **Unreal Engine**, standing in for
+the physical robots. → [Simulation](/guide/simulation)
 
-**Output**
+### VDA5050 Support
+Out-of-the-box support and tooling for VDA5050 compatibility. → [VDA5050](/guide/vda5050)
 
-```js{4}
-export default {
-  data () {
-    return {
-      msg: 'Highlighted!'
-    }
-  }
-}
-```
+### Multi-Agent Path Finding and Execution
+Scalable route planning and deterministic execution. → [MAPF](/guide/mapf)
 
-## Custom Containers
+### Workflow Orchestration
+Effortless workflow definition and customization. → [Task Orchestrator](/guide/task-orchestrator)
 
-**Input**
+## Why it's built this way
 
-```md
-::: info
-This is an info box.
-:::
+Splitting the system into distinct microservices keeps each concern — path finding, task
+orchestration, AGV protocol, simulation — independent and replaceable. You can swap, test,
+or deploy any module on its own, and continuously ship isolated features without disturbing
+the rest of the fleet.
 
-::: tip
-This is a tip.
-:::
 
-::: warning
-This is a warning.
-:::
+| Module | Repo | Image |
+| --- | --- | --- |
+| [Simulation](/guide/simulation) | `simulation/` | UE5 packaged binary |
+| [VDA5050](/guide/vda5050) | `vda5050_fiware_repo` | `vda5050_fiware_repo-vda5050_fiware:latest` |
+| [MAPF (unified)](/guide/mapf) | `mapf_unified_repo` | `mapf_unified:latest` |
+| [Task Orchestrator](/guide/task-orchestrator) | `task_orchestrator_repo` | `task_orchestrator:latest` |
+| IOCS broker stack | `rmf2_broker_repo` | Scorpio / Redis / RabbitMQ / Postgres |
 
-::: danger
-This is a dangerous warning.
-:::
+> All containers share the Docker network `rmf2_broker_rmf-network`.
 
-::: details
-This is a details block.
-:::
-```
-
-**Output**
-
-::: info
-This is an info box.
-:::
-
-::: tip
-This is a tip.
-:::
-
-::: warning
-This is a warning.
-:::
-
-::: danger
-This is a dangerous warning.
-:::
-
-::: details
-This is a details block.
-:::
-
-## More
-
-Check out the documentation for the [full list of markdown extensions](https://vitepress.dev/guide/markdown).
+See [Architecture](/guide/architecture) for how the modules fit together.
