@@ -14,8 +14,7 @@ across robots.
 cd ~/ros_industrial_ws/ros_industrial_demo/test_scripts/taskorchestrator
 python3 send_workflow.py
 ```
-
-<!-- ![Robots moving](/demo/demos-step-02.png) -->
+![Task Orchestrator coordinating multi-robot execution in the warehouse simulation](/demo/task-orchestrator-overview.gif)
 
 → More info: [Task Orchestrator](/guide/task-orchestrator) · [Create a workflow](/guide/create-workflow)
 
