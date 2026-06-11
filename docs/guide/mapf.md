@@ -144,6 +144,12 @@ under `test_scripts/mapf/README.md`.
 ### Demo
 ![Three random agents solved by the MAPF solver and rendered as a collision-free plan](/demo/mapf-solver-test.gif)
 
+![Demo_Mapf](/demo/mapf-step-01.gif)
+```bash
+cd ~/ros_industrial_ws/ros_industrial_demo/test_scripts/mapf
+./loop_tasks.sh 24 1
+```
+
 
 ## Key environment variables
 

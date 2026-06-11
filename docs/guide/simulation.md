@@ -20,7 +20,7 @@ flowchart LR
   sim -- "task_status / asset_status" --> broker
   broker --> you
 ```
-![Simulation](/demo/simulation-overview.png)
+![Simulation](/demo/simulation-step-01.gif)
 
 The simulation starts in fullscreen mode by default.
 
