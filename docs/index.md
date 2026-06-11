@@ -39,10 +39,15 @@ features:
     title: Workflow Orchestration
     details: Effortless Workflow definition and customization.
     link: /guide/task-orchestrator
-  # - icon:
-  #     src: /icons/FcTimeline.svg
-  #   title: Task Scheduling
-  #   details: Highly Efficient Task Scheduling for Machines, Humanoids and Mobile Robots.
+  - icon:
+      src: /icons/FcTimeline.svg
+    title: Task Scheduling
+    details: Highly Efficient Task Scheduling for Machines, Humanoids and Mobile Robots.
+    link: /guide/scheduler
+  - icon: 🖥️
+    title: Web Dashboard & UI
+    details: React Library and Sample Web Dashboard for monitoring and control.
+    link: /guide/ui
   # - icon: 🚀
   #   title: Fast Deployment
   #   details: Continuous Delivery through building, testing, and shipping isolated features as microservices.
@@ -67,5 +72,6 @@ Read them in order:
 4. **[Demos](/guide/demos)** — run it end to end
 
 From there, each module has its own page — **[Simulation](/guide/simulation)**,
-**[VDA5050](/guide/vda5050)**, **[MAPF](/guide/mapf)**, and
-**[Task Orchestrator](/guide/task-orchestrator)** — dive into whichever you need.
+**[VDA5050](/guide/vda5050)**, **[MAPF](/guide/mapf)**,
+**[Task Orchestrator](/guide/task-orchestrator)**, **[Scheduler](/guide/scheduler)**, and
+**[UI](/guide/ui)** — dive into whichever you need.
