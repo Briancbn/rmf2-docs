@@ -71,7 +71,7 @@ python3 send_parallel_workflow_3_robots.py
 
 # choose robots and goals
 python3 send_parallel_workflow_3_robots.py \
-  --robots MiR_00014,MiR_00015,MiR_00016 \
+  --robots Manufacturer_2,Manufacturer_3,Manufacturer_4 \
   --goals  P300,P301,P302
 ```
 
@@ -295,7 +295,7 @@ Known constraints in this version:
   sharing an id collide. A response can be delivered to the wrong waiter and duplicate
   `Schedule` ids clash in `get_workflows`. Give every node and schedule a distinct id.
   - **Workaround:** omit `task_id` from a node's `config` entirely rather than reusing one.
-
+  
 ## Local development
 
 ```bash
@@ -315,5 +315,5 @@ before running.
 
 ```bash
 docker logs task_orchestrator --tail 50
-curl -s http://localhost:2727/health_check && echo " ← orchestrator up"
+curl -sf http://localhost:2727/health_check && echo "orchestrator up"
 ```
