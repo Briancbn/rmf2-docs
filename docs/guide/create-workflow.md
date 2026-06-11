@@ -4,6 +4,13 @@ A workflow is a **Crossflow diagram**: a small JSON graph the
 [Task Orchestrator](/guide/task-orchestrator) executes to coordinate one or more robots.
 This page shows how to author one from scratch, then how to send it.
 
+::: tip Read the Crossflow handbook
+Everything on this page is covered in more depth, in the
+[Crossflow handbook](https://open-rmf.github.io/crossflow-handbook/). It is the best place to
+understand how crossflow and its operations (`node`, `fork_clone`, `buffer`, `join`, …) work and how to use
+them properly.
+:::
+
 ## Diagram anatomy
 
 Every diagram has three top-level keys:
@@ -18,7 +25,7 @@ An **operation** has a `type`. The common ones:
 
 | `type` | Purpose |
 | --- | --- |
-| `node` | Calls a service. Pick a `builder` (e.g. `UniversalNode`, `MapfReplaceNode`) and a `config`. |
+| `node` | Does the work. Pick a `builder` (e.g. `MAPFGoToNode`, `MQTTTaskRequestNode`) and a `config`. |
 | `fork_clone` | Splits flow into parallel branches — `next` is a **list** of op ids. |
 | `buffer` | A wait point that holds a branch's result until a `join` collects it. |
 | `join` | Waits for all listed `buffers`, then continues. |
@@ -26,43 +33,73 @@ An **operation** has a `type`. The common ones:
 `next` points to the id of the op to run next, or `{ "builtin": "terminate" }` to end a
 branch.
 
-::: tip Where data comes from
-A `node`'s `mapping` pulls fields out of the incoming message with JSONPath — e.g.
-`"$.payload.robot_id"` reads `payload.robot_id` from the `Schedule` you send.
+::: tip Node builders and their config
+Each `node` names a `builder` the orchestrator registers — `MAPFGoToNode` (AMR move via AMQP),
+`MQTTTaskRequestNode` (transfer tasks: `liftrack` / `depalletize` / `droprack` via MQTT),
+`WaitAMRTaskNode`, `DefaultNode`. The `config` keys differ per builder — see
+[Workflow nodes](/guide/task-orchestrator#workflow-nodes) for each one's parameters.
 :::
 
 ## Example: sequential pickup → dropoff
 
-The simplest useful workflow — pick at one location, then navigate to another. This is
-the shipped `workflow_executor/diagrams/pickup_dropoff.json`:
+The simplest useful workflow — one robot drives to a rack, picks it up, drives to a drop
+location, and puts it down. It chains a `MAPFGoToNode` (move) and a `MQTTTaskRequestNode`
+(transfer) per step:
 
 ```json
 {
   "version": "0.1.0",
-  "start": "pickup",
+  "start": "drive_to_rack",
   "ops": {
-    "pickup": {
+    "drive_to_rack": {
       "type": "node",
-      "builder": "UniversalNode",
+      "builder": "MAPFGoToNode",
+      "display_text": "Manufacturer_2 -> rack P63",
       "config": {
-        "service_name": "pickup_service",
-        "mapping": {
-          "robot_id": "$.payload.robot_id",
-          "item": "$.payload.item",
-          "location": "$.payload.pickup.location"
-        }
+        "asset_name": "Manufacturer_2",
+        "coordinates": "P63",
+        "task_type": "amr_mapf",
+        "task_id": "demo_drive_rack"
       },
-      "next": "dropoff"
+      "next": "liftrack"
     },
-    "dropoff": {
+    "liftrack": {
       "type": "node",
-      "builder": "UniversalNode",
+      "builder": "MQTTTaskRequestNode",
+      "display_text": "Manufacturer_2 liftrack",
       "config": {
-        "service_name": "navigation_service",
-        "mapping": {
-          "robot_id": "$.payload.robot_id",
-          "destination": "$.payload.dropoff.location"
-        }
+        "id": "urn:ngsild:Task:demo_liftrack",
+        "task_type": "liftrack",
+        "task_command": "START",
+        "asset_id": "Manufacturer_2",
+        "task_params": {},
+        "max_retries": 3
+      },
+      "next": "drive_to_dropoff"
+    },
+    "drive_to_dropoff": {
+      "type": "node",
+      "builder": "MAPFGoToNode",
+      "display_text": "Manufacturer_2 -> dropoff P300",
+      "config": {
+        "asset_name": "Manufacturer_2",
+        "coordinates": "P300",
+        "task_type": "amr_mapf",
+        "task_id": "demo_drive_dropoff"
+      },
+      "next": "droprack"
+    },
+    "droprack": {
+      "type": "node",
+      "builder": "MQTTTaskRequestNode",
+      "display_text": "Manufacturer_2 droprack",
+      "config": {
+        "id": "urn:ngsild:Task:demo_droprack",
+        "task_type": "droprack",
+        "task_command": "START",
+        "asset_id": "Manufacturer_2",
+        "task_params": {},
+        "max_retries": 3
       },
       "next": { "builtin": "terminate" }
     }
@@ -70,46 +107,22 @@ the shipped `workflow_executor/diagrams/pickup_dropoff.json`:
 }
 ```
 
-Reading it: start at `pickup`, call `pickup_service`, then flow to `dropoff`, call
-`navigation_service`, then terminate.
+Reading it: start at `drive_to_rack` (the AMR moves to rack `P63`), `liftrack` picks the rack
+up, `drive_to_dropoff` moves to `P300`, `droprack` sets it down, then terminate. `coordinates`
+must be real map waypoints, and every `task_id` / `id` must be unique (see the Task Orchestrator
+[limitations](/guide/task-orchestrator#limitations)).
 
 ## Example: parallel multi-robot (fork → join)
 
-To move several robots at once, **fork** into a branch per robot and **join** to wait for
+To move several robots at once, `fork` into a branch per robot and `join` to wait for
 all of them. Each branch ends in a `buffer`; the `join` collects every buffer before it
-continues. Sketch for two robots:
+continues. Two robots in the Crossflow editor:
 
-```json
-{
-  "version": "0.1.0",
-  "start": "fork",
-  "ops": {
-    "fork": {
-      "type": "fork_clone",
-      "next": ["move_a", "move_b"]
-    },
-    "move_a": {
-      "type": "node",
-      "builder": "MapfReplaceNode",
-      "next": "buf_a",
-      "config": { "asset_name": "MiR_00014", "coordinates": "P300", "task_type": "amr_mapf" }
-    },
-    "move_b": {
-      "type": "node",
-      "builder": "MapfReplaceNode",
-      "next": "buf_b",
-      "config": { "asset_name": "MiR_00015", "coordinates": "P301", "task_type": "amr_mapf" }
-    },
-    "buf_a": { "type": "buffer" },
-    "buf_b": { "type": "buffer" },
-    "join": {
-      "type": "join",
-      "buffers": ["buf_a", "buf_b"],
-      "next": { "builtin": "terminate" }
-    }
-  }
-}
-```
+![Fork → join: a Fork Clone splits into two MAPFGoToNode branches (AMR1, AMR2), each ending in a Buffer that a Join collects before Terminate](/demo/crossflow-fork-join.png)
+
+The `fork_clone` splits flow into one branch per robot (`AMR1`, `AMR2` — both `MAPFGoToNode`);
+each branch ends in a `buffer`, and the `join` waits for both buffers (inputs `0` and `1`)
+before continuing to `terminate`.
 
 ::: tip Generate it instead of hand-writing
 For N robots, building this by hand is tedious. The
@@ -118,31 +131,16 @@ programmatically — a good template to copy. See
 [Try it directly](/guide/task-orchestrator#try-it-directly-send-to-test).
 :::
 
-## Send it
+## Run it in the editor
 
-The orchestrator runs a diagram when it's wrapped in a **`Schedule`** and published to the
-AMQP `@RECEIVE@` exchange:
+Once a diagram is built (or imported) in the Crossflow frontend editor, click the run button to open
+**Run Workflow**, then **RUN** to execute it through the built-in executor.
 
-```json
-{
-  "id": "urn:ngsi-ld:Schedule:my-test-01",
-  "type": "Schedule",
-  "payload": { "...": "your diagram here" }
-}
-```
+![Running a workflow in the Crossflow editor — the Request input is left as `{}`](/demo/crossflow-run-workflow.png)
 
-The shipped senders do this for you (and are the verified path):
-
-```bash
-cd ~/ros_industrial_ws/ros_industrial_demo/test_scripts
-python3 send_parallel_workflow_3_robots.py
-```
-
-Watch it run:
-
-```bash
-docker logs task_orchestrator --tail 50 -f
-```
-
-For the AMQP message shape, the HTTP `/workflow` alternative, and troubleshooting, see the
-[Task Orchestrator](/guide/task-orchestrator) page.
+::: tip You don't need any request input
+Leave the **Request** field as `{}`. In this implementation the nodes are **self-contained** —
+each one reads everything it needs from its own `config` (asset, coordinates, task type, …), so
+**upstream inputs are not used** and nothing is piped from one node into the next. An empty
+request runs the whole graph.
+:::
