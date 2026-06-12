@@ -39,11 +39,11 @@ mkdir -p ~/ros_industrial_ws
 cd ~/ros_industrial_ws
 
 # Clone repositories (legacy branch)
-git clone -b legacy <https://github.com/ros-industrial/rmf_industrial.git> ros_industrial_demo
-git clone -b legacy <https://github.com/ros-industrial/vda5050_core.git> vda5050_fiware_repo
-git clone -b legacy <https://github.com/ros-industrial/res_mapf.git> mapf_unified_repo
-git clone -b legacy <https://github.com/ros-industrial/rmf2_task_orchestrator.git> task_orchestrator_repo
-git clone -b legacy <https://github.com/ros-industrial/rmf2_broker.git> rmf2_broker_repo
+git clone -b legacy https://github.com/ros-industrial/rmf_industrial.git ros_industrial_demo
+git clone -b legacy https://github.com/ros-industrial/vda5050_core.git vda5050_fiware_repo
+git clone -b legacy https://github.com/ros-industrial/res_mapf.git mapf_unified_repo
+git clone -b legacy https://github.com/ros-industrial/rmf2_task_orchestrator.git task_orchestrator_repo
+git clone -b legacy https://github.com/ros-industrial/rmf2_broker.git rmf2_broker_repo
 ```
 
 ## Build the images
