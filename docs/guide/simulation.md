@@ -171,7 +171,7 @@ need the `paho-mqtt` Python package.
 
 ```bash
 # 1. Make sure the sim is up (demo launcher, or directly):
-~/ros_industrial_ws/simulation/RMF2_new_sim.sh
+~/ros_industrial_ws/simulation/Linux/RMF2_SIM.sh
 
 # 2. In another terminal, go to the simulation test scripts:
 cd ~/ros_industrial_ws/ros_industrial_demo/test_scripts/simulation
