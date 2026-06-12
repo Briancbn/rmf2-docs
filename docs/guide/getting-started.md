@@ -81,7 +81,7 @@ health check before moving on:
 cd ~/ros_industrial_ws/ros_industrial_demo/launch
 ./start_environment_tmux.sh
 
-# tear down
+# tear down (if you have trouble starting, run a teardown first)
 # ./stop_environment_tmux.sh          # graceful, reverse order, kills the tmux session
 # ./stop_environment_tmux.sh --hard   # also force-removes leftover containers and frees the ports below
 ```
