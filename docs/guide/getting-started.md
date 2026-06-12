@@ -83,7 +83,37 @@ cd ~/ros_industrial_ws/ros_industrial_demo/launch
 
 # tear down
 # ./stop_environment_tmux.sh          # graceful, reverse order, kills the tmux session
+# ./stop_environment_tmux.sh --hard   # also force-removes leftover containers and frees the ports below
 ```
+
+::: warning Port conflicts
+The stack publishes the host ports below. If a previous run — or any other process
+(your own Postgres, Redis, RabbitMQ, Mosquitto, etc.) — is already holding one of them,
+startup will fail. Before starting, make sure they are free.
+
+The launcher gates on four of these; a conflict on any **gate port** halts startup:
+
+| Step | Service | Gate port | Other host ports bound |
+|------|---------|-----------|------------------------|
+| Dashboard | rmf2-launcher | **8083** | — |
+| Broker (IOCS) | Swagger / API | **8000** | 1026 (Orion), 9090 (Scorpio), 5432 (Postgres), 5431 (logger DB), 6379 (Redis), 5672 (RabbitMQ), 15672 (RabbitMQ UI), 27016 (Mongo), 8001 (connector), 8002 (event mgr), 8003 (RMF proxy), 8004 (logger), 8084 (monitor), 9999 (nginx proxy) |
+| MQTT | Mosquitto | — | 1883–1888 |
+| MAPF (unified) | solver | **8888** | 7073 (map server), 6333 (AGV state), 1932 (ADG MQTT), 1933 (MRS MQTT) |
+| Task Orchestrator | HTTP API | **2727** | — |
+| Devices (VDA5050) | FIWARE bridge | — | 1928 |
+
+You MUST ensure every port below is free before starting — each command should return
+nothing. Stop or remove whatever shows up.
+
+```bash
+sudo lsof -i :8083 -i :8000 -i :8001 -i :8002 -i :8003 -i :8004 -i :8084 \
+          -i :8888 -i :2727 -i :1026 -i :9090 -i :9999 \
+          -i :5431 -i :5432 -i :5672 -i :15672 -i :6379 -i :27016 \
+          -i :7073 -i :6333 \
+          -i :1883 -i :1884 -i :1885 -i :1886 -i :1887 -i :1888 \
+          -i :1928 -i :1932 -i :1933
+```
+:::
 
 What it does, in order (see [Launch scripts](/guide/launch-scripts) for the full table):
 
