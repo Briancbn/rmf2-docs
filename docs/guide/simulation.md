@@ -257,3 +257,61 @@ reports it arrived; `send_device` blocks until `asset/<id>/task_status` reports
 # ...or with the raw client:
 mosquitto_sub -h localhost -p 1883 -t '#' -v
 ```
+
+## Troubleshooting
+
+Some issues we've identified so far and their potential solutions.
+
+### 1. UE5 simulation crashes immediately — `cannot create a Vulkan device`
+
+**Symptoms:** The simulation exits right after launch with a message like:
+> `cannot create a vulkan device, try updating your video driver to a more recent version`
+
+This is a known issue on **Ubuntu 24.04**, which ships with an outdated Vulkan stack. Fix it with the steps below.
+
+**Step 1 — Switch to X11**
+
+Ubuntu 24.04 uses Wayland by default, but UE5 doesn't natively support Wayland. Disable Wayland in the GDM3 config to use X11:
+
+```bash
+sudo nano /etc/gdm3/custom.conf
+```
+
+Uncomment (or add) this line:
+
+```ini
+WaylandEnable=false
+```
+
+Then reboot or restart GDM:
+
+```bash
+sudo systemctl restart gdm3
+#or
+sudo reboot 
+```
+
+**Step 2 — Install Vulkan drivers**
+
+```bash
+sudo apt install libvulkan1 vulkan-tools mesa-vulkan-drivers
+```
+
+
+### 2. UE5 crashes with `VK_ERROR_DEVICE_LOST`
+
+**Symptoms:** The simulation crashes with:
+> `VulkanRHI::vkDeviceWaitIdle(Device) failed, VkResult=-4`
+> `error VK_ERROR_DEVICE_LOST`
+
+On laptops with both an Intel iGPU and an Nvidia GPU, UE5 may pick the wrong device or PRIME offload may misbehave. Force the Nvidia GPU when launching:
+
+```bash
+__NV_PRIME_RENDER_OFFLOAD=1 
+__GLX_VENDOR_LIBRARY_NAME=nvidia 
+```
+Then try:
+
+```bash
+./RMF2_SIM.sh
+```
