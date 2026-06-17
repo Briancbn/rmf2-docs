@@ -143,6 +143,10 @@ The simulation starts in fullscreen mode by default.
 - Toggle fullscreen: `Alt + Enter`
 - Map marker: `M`
 
+::: tip
+See [Troubleshooting](./simulation#troubleshooting) if the simulation doesn't run as expected. Some environments (e.g. newer Ubuntu releases or mixed integrated/discrete GPU machines) may need extra steps.
+:::
+
 ## Send a Demo Task to the Task Orchestrator
 
 Publish a parallel workflow to the Task Orchestrator. This workflow forks into multiple robot tasks and joins when all robots complete their work.

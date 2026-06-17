@@ -262,9 +262,9 @@ mosquitto_sub -h localhost -p 1883 -t '#' -v
 
 Some issues we've identified so far and their potential solutions.
 
-### 1. UE5 simulation crashes immediately — `cannot create a Vulkan device`
+### UE5 simulation crashes immediately — `cannot create a Vulkan device`
 
-**Symptoms:** The simulation exits right after launch with a message like:
+**Behavior:** The simulation exits right after launch with a message like:
 > `cannot create a vulkan device, try updating your video driver to a more recent version`
 
 This is a known issue on **Ubuntu 24.04**, which ships with an outdated Vulkan stack. Fix it with the steps below.
@@ -298,9 +298,9 @@ sudo apt install libvulkan1 vulkan-tools mesa-vulkan-drivers
 ```
 
 
-### 2. UE5 crashes with `VK_ERROR_DEVICE_LOST`
+### UE5 crashes with `VK_ERROR_DEVICE_LOST`
 
-**Symptoms:** The simulation crashes with:
+**Behavior:** The simulation crashes with:
 > `VulkanRHI::vkDeviceWaitIdle(Device) failed, VkResult=-4`
 > `error VK_ERROR_DEVICE_LOST`
 
